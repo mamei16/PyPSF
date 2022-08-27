@@ -3,8 +3,8 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "PyPSF"
-version = "0.0.3"
+name = "pypsf"
+version = "0.0.4"
 authors = [
   { name="Marcel Meimbresse", email="" },
 ]

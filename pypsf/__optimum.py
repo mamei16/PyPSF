@@ -19,11 +19,11 @@ def _optimum_k(dataset, k_values):
                 best_k: int
                     Optimum Number of clusters for PSF.
     """
-    global best_k
     dataset = np.array(dataset)
 
     # Find best number of clusters.
     best_s = -1
+    best_k = 1
     for k in k_values:
         if 1 < k < len(dataset):
             # Using algorithm kMeans for clustering.
