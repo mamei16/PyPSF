@@ -3,8 +3,8 @@ import warnings
 import numpy as np
 import pandas as pd
 
-from __optimum import _optimum_k, _optimum_w
-from __psf_predict import _psf_predict, format_warning
+from pypsf.__optimum import _optimum_k, _optimum_w
+from pypsf.__psf_predict import _psf_predict, format_warning
 from sklearn.linear_model import LinearRegression
 
 
