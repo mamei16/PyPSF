@@ -1,0 +1,2 @@
+# PyPSF
+This project provides the only valid python implementation of the Pattern Sequence Forecasting (PSF) algorithm. To the best of my knownledge, the only other python implementation of PSF is [PSF_Py](https://github.com/Mayur1009/PSF_Py), which is not faithful to the original PSF algorithm, as it does not split the data into cycles. For a detailed description of the PSF algorithm and some of the practical issues I encountered when using it, see [this PDF file](psf_description.pdf), which is a section I copied from my thesis.
