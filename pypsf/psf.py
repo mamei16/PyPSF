@@ -71,7 +71,7 @@ class Psf:
             self.last_data_points = data[-self.diff_periods:]
             data = data[self.diff_periods:] - data[:-self.diff_periods]
         # Normalize data
-        norm_data = data #self.min_max_scaler.fit_transform(data.reshape(-1, 1)).flatten()
+        norm_data = self.min_max_scaler.fit_transform(data.reshape(-1, 1)).flatten()
         # Split data into cycles
         fit = len(data) % self.cycle
         if fit > 0 and not self.suppress_warnings:
@@ -117,9 +117,9 @@ class Psf:
         # Step 7. Predict the 'n_ahead' next values for the time series.
         preds = psf_predict(dataset=self.norm_data, n_ahead=self.cycle * n_ahead, cycle=self.cycle, k=self.k, w=self.w,
                             surpress_warnings=self.suppress_warnings)
-        self.preds = np.concatenate(preds)[:orig_n_ahead]  # cut off surplus preds of intermediate prediction horizon
+        preds = np.concatenate(preds)[:orig_n_ahead]  # cut off surplus preds of intermediate prediction horizon
         # Step 8. Denormalize predicted data.
-        #self.preds = self.min_max_scaler.inverse_transform(preds.reshape(-1, 1)).flatten()
+        self.preds = self.min_max_scaler.inverse_transform(preds.reshape(-1, 1)).flatten()
         if self.apply_diff:
             self.preds = reverse_diff(self.last_data_points, self.preds, self.diff_periods)
         if self.detrend:
