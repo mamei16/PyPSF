@@ -1,7 +1,6 @@
 import warnings
 
 import numpy as np
-import pandas as pd
 
 from pypsf.hyperparameter_search import optimum_k, optimum_w
 from pypsf.predict import psf_predict, format_warning
@@ -46,7 +45,7 @@ class Psf:
         self.dmin = None  # maximum of data. Will be instantiated when calling 'fit'
         self.dmax = None  # minimum of data. Will be instantiated when calling 'fit'
 
-    def preprocessing(self, data: pd.Series or np.array) -> np.array:
+    def preprocessing(self, data) -> np.array:
         """
         Performs the following steps to prepare the data for the PSF algorithm:
             1. (Optional) Remove a linear trend from the data if self.detrend is
@@ -82,7 +81,7 @@ class Psf:
         cycles = np.array_split(norm_data, split_idxs)
         return np.stack(cycles)
 
-    def fit(self, data: pd.Series or np.array, k_values=tuple(range(3, 12)), w_values=tuple(range(1, 20))) -> "Psf":
+    def fit(self, data, k_values=tuple(range(3, 12)), w_values=tuple(range(1, 20))) -> "Psf":
         """
         Performs a hyperparameter search for good values of 'k' (the number of
         clusters) and 'w' (the window size), unless they were already provided
