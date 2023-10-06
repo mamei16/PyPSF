@@ -15,7 +15,7 @@ This project provides a valid python implementation of the Pattern Sequence Fore
 ```
 import numpy as np
 
-from pypsf.psf import Psf
+from pypsf import Psf
 
 
 t_series = np.array([1, 2, 3, 1, 2, 3, 1, 2, 3])

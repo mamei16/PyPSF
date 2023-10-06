@@ -1,11 +1,11 @@
 import numpy as np
 from sklearn.metrics import silhouette_score, mean_absolute_error
 
-from pypsf.__kmeans_cluster import _cluster_labels
-from pypsf.__psf_predict import _psf_predict
+from pypsf.clustering import _cluster_labels
+from pypsf.predict import psf_predict
 
 
-def _optimum_k(dataset, k_values):
+def optimum_k(dataset, k_values):
     """
     Function to calculate optimum number of clusters
     Parameters:
@@ -38,7 +38,7 @@ def _optimum_k(dataset, k_values):
     return best_k
 
 
-def _optimum_w(data, k, cycle, w_values):
+def optimum_w(data, k, cycle, w_values):
     """
     Function to calculate optimal window size
     Parameters:
@@ -60,8 +60,8 @@ def _optimum_w(data, k, cycle, w_values):
     """
     # Step 1. Take validation set out from training.
     n_ahead = int(0.3 * len(data))
-    test = data.iloc[-n_ahead:]
-    training = data.iloc[:len(data) - n_ahead] 
+    test = data[-n_ahead:]
+    training = data[:len(data) - n_ahead]
     n = len(training)
     best_w = 0
 
@@ -70,7 +70,7 @@ def _optimum_w(data, k, cycle, w_values):
     for w in w_values:
         if 0 < w < n:
             # 2.1 Perform prediction with the current 'w' value.
-            pred = _psf_predict(dataset=training, k=k, w=w, cycle=cycle, n_ahead=cycle * n_ahead, surpress_warnings=True)
+            pred = psf_predict(dataset=training, k=k, w=w, cycle=cycle, n_ahead=cycle * n_ahead, surpress_warnings=True)
             pred = np.array(pred)
 
             # 2.2 Evaluate error and update the minimum.
