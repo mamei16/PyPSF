@@ -21,7 +21,7 @@ t_series = np.array([1, 2, 3, 1, 2, 3, 1, 2, 3])
 train = t_series[:6]
 test = t_series[6:]
 
-psf = Psf(cycle=3)
+psf = Psf(cycle_length=3)
 psf.fit(train)
 
 pred = psf.predict(len(test))
@@ -33,7 +33,7 @@ print(pred) # [1. 2. 3.]
 ### Parameters
 
 **class Psf**
-- cycle: int  
+- cycle_length: int  
     The cycle length c
 - k: int (optional), default None    
     The user-defined number of desired clusters when running K-means on the cycles
