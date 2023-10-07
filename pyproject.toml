@@ -8,7 +8,7 @@ version = "1.0.1"
 authors = [
   { name="Marcel Meimbresse", email="" },
 ]
-description = "Python implementation of the Pattern Sequence Forecasting (PSF) algorithm"
+description = "Python implementation of the Pattern Sequence Based Forecasting (PSF) algorithm"
 readme = "README.md"
 license = { file="LICENSE" }
 requires-python = ">=3.7"
