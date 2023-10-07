@@ -22,7 +22,8 @@ t_series = np.array([1, 2, 3, 1, 2, 3, 1, 2, 3])
 train = t_series[:6]
 test = t_series[6:]
 
-psf = Psf(train, cycle=3)
+psf = Psf(cycle=3)
+psf.fit(train)
 
 pred = psf.predict(len(test))
 
