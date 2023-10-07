@@ -1,5 +1,5 @@
 # PyPSF
-This project provides a valid python implementation of the Pattern Sequence Based Forecasting (PSF) algorithm. For a detailed description of the PSF algorithm and some of the practical issues I encountered when using it, see [this PDF file](https://github.com/mamei16/PyPSF/blob/9b6d395cf2b8288937e7b4bca7ee5752e2e1c435/psf_description.pdf).
+This project provides a python implementation of the Pattern Sequence Based Forecasting (PSF) algorithm. For a detailed description of the PSF algorithm and some of the practical issues I encountered when using it, see [this PDF file](https://github.com/mamei16/PyPSF/blob/9b6d395cf2b8288937e7b4bca7ee5752e2e1c435/psf_description.pdf).
 
 ## Installation
 
