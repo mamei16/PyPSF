@@ -1,6 +1,7 @@
 import warnings
 
 import numpy as np
+from numpy.typing import ArrayLike
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import MinMaxScaler
 
@@ -13,14 +14,14 @@ class Psf:
     Based on https://pypi.org/project/PSF-Py/ and hence transitively based on
     https://cran.r-project.org/web/packages/PSF/index.html
     """
-    def __init__(self, cycle: int, k: int or None = None, w: int or None = None,
+    def __init__(self, cycle_length: int, k: int or None = None, w: int or None = None,
                  suppress_warnings: bool = False, apply_diff: bool = False, diff_periods: int = 1,
                  detrend: bool = False):
         """
         A Pattern Sequence Based Forecasting model.
 
         Args:
-            cycle (int):
+            cycle_length (int):
                 The cycle length c
             k (int or None): optional
                 The user-defined number of desired clusters when running K-means
@@ -45,14 +46,14 @@ class Psf:
         self.detrend = detrend
         self.k = k
         self.w = w
-        self.cycle = cycle
+        self.cycle_length = cycle_length
         self.suppress_warnings = suppress_warnings
         self.apply_diff = apply_diff
         self.min_max_scaler = MinMaxScaler()
         self.norm_data = None  # will be instantiated when calling 'fit'
         self.preds = None  # will be instantiated when calling 'predict'
 
-    def preprocessing(self, data) -> np.array:
+    def preprocessing(self, data: ArrayLike) -> np.array:
         """
         Performs the following steps to prepare the data for the PSF algorithm:
             1. (Optional) Remove a linear trend from the data if self.detrend is
@@ -80,22 +81,25 @@ class Psf:
         # Normalize data
         norm_data = self.min_max_scaler.fit_transform(data.reshape(-1, 1)).flatten()
         # Split data into cycles
-        fit = len(data) % self.cycle
+        fit = len(data) % self.cycle_length
         if fit > 0 and not self.suppress_warnings:
-            warn_str = f"\nTime Series length is not multiple of {self.cycle}. Cutting first {fit} values!"
+            warn_str = f"\nTime Series length is not multiple of {self.cycle_length}. Cutting first {fit} values!"
             warnings.warn(warn_str)
         norm_data = norm_data[fit:]
-        split_idxs = np.arange(self.cycle, len(norm_data), self.cycle, dtype=int)
+        split_idxs = np.arange(self.cycle_length, len(norm_data), self.cycle_length, dtype=int)
         cycles = np.array_split(norm_data, split_idxs)
         return np.stack(cycles)
 
-    def fit(self, data, k_values=tuple(range(3, 12)), w_values=tuple(range(1, 20))) -> "Psf":
+    def fit(self, data: ArrayLike, k_values=tuple(range(3, 12)), w_values=tuple(range(1, 20))) -> "Psf":
         """
         Performs a hyperparameter search for good values of 'k' (the number of
         clusters) and 'w' (the window size), unless they were already provided
         by the user in '__init__'.
 
         Args:
+            data (ArrayLike):
+                The training timeseries data that is used in the hyperparameter
+                search
             k_values (tuple):
                 The range of 'k' values to search
             w_values (tuple):
@@ -109,7 +113,7 @@ class Psf:
             self.k = optimum_k(self.norm_data, k_values)
         # Find optimal window size (W) (or use the value specified by the user).
         if self.w is None:
-            self.w = optimum_w(self.norm_data, self.k, self.cycle, w_values)
+            self.w = optimum_w(self.norm_data, self.k, self.cycle_length, w_values)
         return self
 
     def predict(self, n_ahead: int) -> np.array:
@@ -123,21 +127,22 @@ class Psf:
             A numpy array of generated predictions
         """
         orig_n_ahead = n_ahead
-        n_ahead = int((n_ahead / self.cycle) + 1)
-        fit = orig_n_ahead % self.cycle
+        n_ahead = int((n_ahead / self.cycle_length) + 1)
+        fit = orig_n_ahead % self.cycle_length
         if fit > 0 and not self.suppress_warnings:
             warnings.formatwarning = format_warning
-            warn_str = f"\nPrediction horizon {orig_n_ahead} is not multiple of {self.cycle}." \
-                       f" Using {n_ahead * self.cycle} as intermediate prediction horizon!"
+            warn_str = f"\nPrediction horizon {orig_n_ahead} is not multiple of {self.cycle_length}." \
+                       f" Using {n_ahead * self.cycle_length} as intermediate prediction horizon!"
             warnings.warn(warn_str)
 
-        # Step 7. Predict the 'n_ahead' next values for the time series.
-        preds = psf_predict(dataset=self.norm_data, n_ahead=self.cycle * n_ahead, cycle=self.cycle, k=self.k, w=self.w,
-                            surpress_warnings=self.suppress_warnings)
+        # Predict the 'n_ahead' next values for the time series.
+        preds = psf_predict(dataset=self.norm_data, n_ahead=self.cycle_length * n_ahead,
+                            cycle_length=self.cycle_length, k=self.k, w=self.w,
+                            supress_warnings=self.suppress_warnings)
         self.preds = self.postprocessing(preds, orig_n_ahead)
         return self.preds
 
-    def postprocessing(self, preds, orig_n_ahead: int) -> np.array:
+    def postprocessing(self, preds: list[np.array], orig_n_ahead: int) -> np.array:
         """
         Performs the inverse of 'preprocessing', i.e.:
             1. (Optional) Re-add a linear trend from the data if self.detrend is
@@ -147,11 +152,17 @@ class Psf:
                 differencing if self.diff_periods > 1
             3. Revert the data normalization in the predictions
             4. Concatenate the predicted cycles into a flat array
+        Args:
+            preds (list[np.array]):
+                A list of predicted cycles
+            orig_n_ahead (int):
+                The desired number of values to be predicted. Excess predicted
+                 values will be cut off.
         Returns (np.array):
             The final predictions, ready to be used.
         """
         preds = np.concatenate(preds)[:orig_n_ahead]  # cut off surplus preds of intermediate prediction horizon
-        # Step 8. Denormalize predicted data.
+        # Denormalize predicted data.
         preds = self.min_max_scaler.inverse_transform(preds.reshape(-1, 1)).flatten()
         if self.apply_diff:
             preds = reverse_diff(self.last_data_points, preds, self.diff_periods)
@@ -162,10 +173,25 @@ class Psf:
         return preds
 
     def __repr__(self):
-        return f"PSF | k = {self.k}, w = {self.w}, cycle = {self.cycle}"
+        return f"PSF | k = {self.k}, w = {self.w}, cycle_length = {self.cycle_length}"
 
 
-def reverse_diff(orig_vals, diffed, periods):
+def reverse_diff(orig_vals: np.array, diffed: np.array, periods: int) -> np.array:
+    """
+    Reverse the first order differencing that was applied to the given
+    data.
+    Args:
+        orig_vals (np.array):
+            The last 'd' values of the original series before differencing was
+            applied, where 'd' is the number of differencing periods.
+        diffed (np.array):
+            A series to which first order differencing was applied.
+        periods (np.array):
+            The number of differencing periods
+    Returns:
+        res (np.array):
+            The given data with no more differencing applied
+    """
     length = len(diffed)
     res = np.zeros(length)
     for i in range(periods):

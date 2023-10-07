@@ -1,37 +1,45 @@
 import re
 
+import numpy as np
 
-def neighbor_indices(data, w):
+
+def neighbor_indices(cluster_labels: np.array, w: int) -> list[int]:
     """
-    Function to find neighbours and their indices in original list. The is done by first converting the list of ints
+    Take the last 'w' cluster labels and return all matching previous occurrences of this pattern in the rest of the
+    list of cluster labels (so-called neighbors). The is done by first converting the list of ints
     to a list of chars and subsequently converting the latter to string. Finally, the 'finditer' function provided in
     python package "re" is used.
 
-    Parameters:
-                data : array
-                    The data in which to find neighbours.
+    Args:
+        cluster_labels (np.array):
+            The data in which to find neighbours.
+        w (int):
+            Size of window.
 
-                w : int
-                    Size of window.
-    Returns:
-                Array of Neighbour indices
+    Returns (list[int]):
+        List of neighbor indices in the list of cluster labels
     """
-    t = ''.join(to_char(i) for i in data[:-1])
-    pattern = data[-w:]
+    t = ''.join(to_char(i) for i in cluster_labels[:-1])
+    pattern = cluster_labels[-w:]
     p = ''.join(to_char(i) for i in pattern)
     p = re.compile(p)
     matches = re.finditer(p, t)
     return [match.end() for match in matches]
 
 
-def to_char(num):
+def to_char(num: int) -> str:
     """
     Converts a given integer into a char by using the default 'chr' function, unless the length of the escaped
     representation of that char would be more than 1, in which case a fallback char is returned. The fallback chars
     consist of the char conversion of the numbers in the interval [1114088, 1114111], corresponding to the 24 largest
     numbers that can be converted using 'chr'.
-    :param num:
-    :return:
+
+    Args:
+        num (int):
+            The integer to convert to a Unicode string character
+
+    Returns (str):
+        Unicode string character
     """
     return bad_char_dict.get(num, chr(num))
 

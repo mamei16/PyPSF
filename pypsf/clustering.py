@@ -2,19 +2,18 @@ import numpy as np
 from sklearn.cluster import KMeans
 
 
-def _cluster_labels(dataset, n_clusters):
+def run_clustering(cycles: list[np.array], n_clusters: int) -> KMeans:
     """
-    Parameters:
-                dataset : pandas.series
-                    The data to perform k-means clustering on.
-
-                n_clusters : int
-                     Number of clusters (k) to form.
+    Apply K-means clustering to the provided list of cycles.
+    Args:
+        cycles (list[np.array]):
+            The cycles to cluster
+        n_clusters (int):
+            Number of clusters (k) to form.
 
     Returns:
-                cluster_labels : array
-                    Index of the cluster each sample belongs to.
+        kmeans (KMeans):
+            The fitted K-means clustering object
     """
-    dataset = np.array(dataset)
-    kmeans = KMeans(n_clusters=n_clusters, init='random', n_init="auto", random_state=3683475120).fit(dataset)
-    return kmeans
+    dataset = np.array(cycles)
+    return KMeans(n_clusters=n_clusters, init='random', n_init="auto", random_state=3683475120).fit(cycles)
