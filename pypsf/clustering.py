@@ -16,5 +16,5 @@ def _cluster_labels(dataset, n_clusters):
                     Index of the cluster each sample belongs to.
     """
     dataset = np.array(dataset)
-    kmeans = KMeans(n_clusters=n_clusters, init='random', n_init="auto", random_state=42).fit(dataset)
+    kmeans = KMeans(n_clusters=n_clusters, init='random', n_init="auto", random_state=3683475120).fit(dataset)
     return kmeans
