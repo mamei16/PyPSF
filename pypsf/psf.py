@@ -1,11 +1,11 @@
 import warnings
 
 import numpy as np
-
-from pypsf.hyperparameter_search import optimum_k, optimum_w
-from pypsf.predict import psf_predict, format_warning
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import MinMaxScaler
+
+from .hyperparameter_search import optimum_k, optimum_w
+from .predict import psf_predict, format_warning
 
 
 class Psf:

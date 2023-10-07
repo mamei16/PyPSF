@@ -1,8 +1,10 @@
 import warnings
-import numpy as np
 from collections import Counter
-from pypsf.clustering import _cluster_labels
-from pypsf.neighbors import neighbor_indices
+
+import numpy as np
+
+from .clustering import _cluster_labels
+from .neighbors import neighbor_indices
 
 
 def psf_predict(dataset, n_ahead, cycle, k, w, surpress_warnings=False):

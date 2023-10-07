@@ -1,8 +1,8 @@
 import numpy as np
 from sklearn.metrics import silhouette_score, mean_absolute_error
 
-from pypsf.clustering import _cluster_labels
-from pypsf.predict import psf_predict
+from .clustering import _cluster_labels
+from .predict import psf_predict
 
 
 def optimum_k(dataset, k_values):
