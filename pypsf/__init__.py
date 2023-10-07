@@ -1,1 +1,1 @@
-from .psf import Psf
+from pypsf.psf import Psf

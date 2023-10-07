@@ -4,8 +4,8 @@ import numpy as np
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import MinMaxScaler
 
-from .hyperparameter_search import optimum_k, optimum_w
-from .predict import psf_predict, format_warning
+from pypsf.hyperparameter_search import optimum_k, optimum_w
+from pypsf.predict import psf_predict, format_warning
 
 
 class Psf:
@@ -50,8 +50,7 @@ class Psf:
         self.apply_diff = apply_diff
         self.min_max_scaler = MinMaxScaler()
         self.norm_data = None  # will be instantiated when calling 'fit'
-        self.dmin = None  # maximum of data. Will be instantiated when calling 'fit'
-        self.dmax = None  # minimum of data. Will be instantiated when calling 'fit'
+        self.preds = None  # will be instantiated when calling 'predict'
 
     def preprocessing(self, data) -> np.array:
         """
@@ -135,7 +134,8 @@ class Psf:
         # Step 7. Predict the 'n_ahead' next values for the time series.
         preds = psf_predict(dataset=self.norm_data, n_ahead=self.cycle * n_ahead, cycle=self.cycle, k=self.k, w=self.w,
                             surpress_warnings=self.suppress_warnings)
-        return self.postprocessing(preds, orig_n_ahead)
+        self.preds = self.postprocessing(preds, orig_n_ahead)
+        return self.preds
 
     def postprocessing(self, preds, orig_n_ahead: int) -> np.array:
         """
@@ -152,14 +152,14 @@ class Psf:
         """
         preds = np.concatenate(preds)[:orig_n_ahead]  # cut off surplus preds of intermediate prediction horizon
         # Step 8. Denormalize predicted data.
-        self.preds = self.min_max_scaler.inverse_transform(preds.reshape(-1, 1)).flatten()
+        preds = self.min_max_scaler.inverse_transform(preds.reshape(-1, 1)).flatten()
         if self.apply_diff:
-            self.preds = reverse_diff(self.last_data_points, self.preds, self.diff_periods)
+            preds = reverse_diff(self.last_data_points, preds, self.diff_periods)
         if self.detrend:
-            pred_len = len(self.preds)
+            pred_len = len(preds)
             pred_idx = np.linspace(self.idx, self.idx + pred_len - 1, pred_len, dtype=int).reshape(-1, 1)
-            self.preds += self.trend_mod.predict(pred_idx)
-        return self.preds
+            preds += self.trend_mod.predict(pred_idx)
+        return preds
 
     def __repr__(self):
         return f"PSF | k = {self.k}, w = {self.w}, cycle = {self.cycle}"
