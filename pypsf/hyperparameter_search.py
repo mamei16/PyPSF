@@ -73,7 +73,8 @@ def optimum_w(data: np.array, k: int, cycle_length: int, w_values: tuple[int]) -
     for w in w_values:
         if 0 < w < n:
             # 2.1 Perform prediction with the current 'w' value.
-            pred = psf_predict(dataset=training, k=k, w=w, cycle_length=cycle_length, n_ahead=cycle_length * n_ahead, surpress_warnings=True)
+            pred = psf_predict(dataset=training, k=k, w=w, cycle_length=cycle_length, n_ahead=cycle_length * n_ahead,
+                               supress_warnings=True)
             pred = np.array(pred)
 
             # 2.2 Evaluate error and update the minimum.
