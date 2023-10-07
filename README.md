@@ -11,7 +11,7 @@ This project provides a valid python implementation of the Pattern Sequence Fore
 
 ## Example Usage
 
-```
+```python
 import numpy as np
 
 from pypsf import Psf
