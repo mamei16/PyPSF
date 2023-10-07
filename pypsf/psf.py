@@ -13,24 +13,32 @@ class Psf:
     Based on https://pypi.org/project/PSF-Py/ and hence transitively based on
     https://cran.r-project.org/web/packages/PSF/index.html
     """
-    def __init__(self, cycle, k=None, w=None, suppress_warnings=False, apply_diff=False, diff_periods=1,
-                 detrend=False):
+    def __init__(self, cycle: int, k: int or None = None, w: int or None = None,
+                 suppress_warnings: bool = False, apply_diff: bool = False, diff_periods: int = 1,
+                 detrend: bool = False):
         """
-        :param cycle: int
-            The cycle length c
-        :param k: optional
-            The user-defined number of desired clusters when running K-means on the cycles
-        :param w: optional
-            The user-defined window size
-        :param suppress_warnings: optional
-            Suppress all warnings
-        :param apply_diff: optional
-            Apply first order differencing to the time series before applying PSF
-        :param diff_periods: optional, default=1
-            Periods to shift for calculating difference, to allow for either ordinary or seasonal differencing
-        :param detrend:
-            Remove a linear trend from the series prior to applying PSF by fitting a simple linear regression model.
-            The trend is subsequently re-added to the predictions.
+        A Pattern Sequence Based Forecasting model.
+
+        Args:
+            cycle (int):
+                The cycle length c
+            k (int or None): optional
+                The user-defined number of desired clusters when running K-means
+                on the cycles
+            w (int or None): optional
+                The user-defined window size
+            suppress_warnings (bool):
+                Suppress all warnings
+            apply_diff (bool):
+                Apply first order differencing to the time series before
+                applying PSF
+            diff_periods (bool):
+                Periods to shift for calculating difference, to allow for either
+                ordinary or seasonal differencing
+            detrend (bool):
+                Remove a linear trend from the series prior to applying PSF by
+                fitting a simple linear regression model. The trend is
+                subsequently re-added to the predictions.
         """
         self.apply_diff = apply_diff
         self.diff_periods = diff_periods
@@ -55,7 +63,8 @@ class Psf:
                 differencing if self.diff_periods > 1
             3. Normalize the data
             4. Split the data into cycles
-        Returns (pd.DataFrame):
+        Returns (np.array):
+            The preprocessed data on which to run the PSF algorithm.
         """
         data = np.array(data)
         if np.isnan(data).any():
@@ -92,7 +101,8 @@ class Psf:
                 The range of 'k' values to search
             w_values (tuple):
                 The range of 'w' values to search
-        Returns (None):
+        Returns:
+            self (Psf)
         """
         self.norm_data = self.preprocessing(data)
         # Find optimal number (K) of clusters (or use the value specified by the user).
@@ -103,7 +113,16 @@ class Psf:
             self.w = optimum_w(self.norm_data, self.k, self.cycle, w_values)
         return self
 
-    def predict(self, n_ahead):
+    def predict(self, n_ahead: int) -> np.array:
+        """
+        Run the PSF algorithm to predict the next 'n_ahead' values.
+        Args:
+            n_ahead (int):
+                The number of values to predict.
+
+        Returns (np.array):
+            A numpy array of generated predictions
+        """
         orig_n_ahead = n_ahead
         n_ahead = int((n_ahead / self.cycle) + 1)
         fit = orig_n_ahead % self.cycle
@@ -119,6 +138,18 @@ class Psf:
         return self.postprocessing(preds, orig_n_ahead)
 
     def postprocessing(self, preds, orig_n_ahead: int) -> np.array:
+        """
+        Performs the inverse of 'preprocessing', i.e.:
+            1. (Optional) Re-add a linear trend from the data if self.detrend is
+                True
+            2. (Optional) Reverse first order differencing to the data if
+                self.apply_diff is True. Optionally, this can be seasonal
+                differencing if self.diff_periods > 1
+            3. Revert the data normalization in the predictions
+            4. Concatenate the predicted cycles into a flat array
+        Returns (np.array):
+            The final predictions, ready to be used.
+        """
         preds = np.concatenate(preds)[:orig_n_ahead]  # cut off surplus preds of intermediate prediction horizon
         # Step 8. Denormalize predicted data.
         self.preds = self.min_max_scaler.inverse_transform(preds.reshape(-1, 1)).flatten()
@@ -129,7 +160,6 @@ class Psf:
             pred_idx = np.linspace(self.idx, self.idx + pred_len - 1, pred_len, dtype=int).reshape(-1, 1)
             self.preds += self.trend_mod.predict(pred_idx)
         return self.preds
-
 
     def __repr__(self):
         return f"PSF | k = {self.k}, w = {self.w}, cycle = {self.cycle}"
