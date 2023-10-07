@@ -1,11 +1,11 @@
 import warnings
 import numpy as np
 from collections import Counter
-from pypsf.__kmeans_cluster import _cluster_labels
-from pypsf.__neighbor import neighbor_indices
+from pypsf.clustering import _cluster_labels
+from pypsf.neighbors import neighbor_indices
 
 
-def _psf_predict(dataset, n_ahead, cycle, k, w, surpress_warnings=False):
+def psf_predict(dataset, n_ahead, cycle, k, w, surpress_warnings=False):
     """
     Parameters :
                 dataset :
@@ -65,7 +65,7 @@ def _psf_predict(dataset, n_ahead, cycle, k, w, surpress_warnings=False):
             # Step 6. Set the current window to its initial value and take next horizon.
             cw = w
             n = n + 1
-    return temp[-n_ahead_cycles:]
+    return np.array(temp[-n_ahead_cycles:])
 
 
 def format_warning(message, category, filename, lineno, line=''):

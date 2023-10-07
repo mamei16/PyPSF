@@ -8,21 +8,21 @@ This project provides a valid python implementation of the Pattern Sequence Fore
 ### Dependencies
 - scikit-learn
 - numpy
-- pandas
 
 ## Example Usage
 
 ```
 import numpy as np
 
-from pypsf.psf import Psf
+from pypsf import Psf
 
 
 t_series = np.array([1, 2, 3, 1, 2, 3, 1, 2, 3])
 train = t_series[:6]
 test = t_series[6:]
 
-psf = Psf(train, cycle=3)
+psf = Psf(cycle=3)
+psf.fit(train)
 
 pred = psf.predict(len(test))
 
@@ -33,9 +33,6 @@ print(pred) # [1. 2. 3.]
 ### Parameters
 
 **class Psf**
-
-- data:   
-    The input time series
 - cycle: int  
     The cycle length c
 - k: int (optional), default None    
@@ -52,12 +49,16 @@ print(pred) # [1. 2. 3.]
     Remove a linear trend from the series prior to applying PSF by fitting a simple linear regression model.
     The trend is subsequently re-added to the predictions.
 
-**Psf.predict**
-- n_ahead: int  
-  The number of values to predict
+**Psf.fit**
+- data:   
+    The input time series
 - k_values: iterable[int] (optional), default tuple(range(3, 12))  
   The set of candidate values of *k* to test when finding the "best" *k* number of clusters based on the training data
 - w_values: iterable[int] (optional), default tuple(range(1, 20))  
   The set of candidate values of *w* to test when finding the "best" window size *w* based on the training data
+
+**Psf.predict**
+- n_ahead: int  
+  The number of values to predict
  
     
