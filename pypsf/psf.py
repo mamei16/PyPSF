@@ -90,7 +90,7 @@ class Psf:
         cycles = np.array_split(norm_data, split_idxs)
         return np.stack(cycles)
 
-    def fit(self, data: ArrayLike, k_values=tuple(range(3, 12)), w_values=tuple(range(1, 20))) -> "Psf":
+    def fit(self, data: ArrayLike, k_values=tuple(range(2, 12)), w_values=tuple(range(1, 20))) -> "Psf":
         """
         Performs a hyperparameter search for good values of 'k' (the number of
         clusters) and 'w' (the window size), unless they were already provided
