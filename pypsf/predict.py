@@ -8,7 +8,7 @@ from pypsf.neighbors import neighbor_indices
 
 
 def psf_predict(dataset: np.array, n_ahead: int, cycle_length: int, k, w,
-                supress_warnings=False) -> np.array:
+                supress_warnings=False, pca=None) -> np.array:
     """
     Run the PSF algorithm on the provided data to generate the desired number
     of predictions.
@@ -36,6 +36,7 @@ def psf_predict(dataset: np.array, n_ahead: int, cycle_length: int, k, w,
     Returns (np.array):
         The predicted cycles
     """
+
     clusters = None
     temp = list(np.array(dataset))
     n_ahead_cycles = int(n_ahead / cycle_length)  # Assuming n_ahead_cycle >= 1
@@ -45,7 +46,7 @@ def psf_predict(dataset: np.array, n_ahead: int, cycle_length: int, k, w,
     while n <= n_ahead_cycles:
         # Step 1. Dataset clustering (if window size was not reduced).
         if cw == w:
-            k_means = run_clustering(temp, k)
+            k_means = run_clustering(temp, k, pca)
             clusters = k_means.labels_
         # Step 2. Find the pattern in training data (neighbors).
         neighbor_index = neighbor_indices(clusters, cw)
@@ -58,7 +59,10 @@ def psf_predict(dataset: np.array, n_ahead: int, cycle_length: int, k, w,
                 label_counts = Counter(clusters)
                 biggest_cluster, _ = max(label_counts.items(), key=lambda x: x[1])
                 centroid = k_means.cluster_centers_[biggest_cluster]
-                temp.append(centroid)   # Use centroid of biggest cluster as prediction
+                if pca is not None:
+                    temp.append(pca.inverse_transform(centroid))
+                else:
+                    temp.append(centroid)   # Use centroid of biggest cluster as prediction
                 # Set the current window to its initial value and make next prediction.
                 cw = w
                 n = n + 1

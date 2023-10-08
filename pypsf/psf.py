@@ -4,6 +4,7 @@ import numpy as np
 from numpy.typing import ArrayLike
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import MinMaxScaler
+from sklearn.decomposition import PCA
 
 from pypsf.hyperparameter_search import optimum_k, optimum_w
 from pypsf.predict import psf_predict, format_warning
@@ -16,7 +17,7 @@ class Psf:
     """
     def __init__(self, cycle_length: int, k: int or None = None, w: int or None = None,
                  suppress_warnings: bool = False, apply_diff: bool = False, diff_periods: int = 1,
-                 detrend: bool = False):
+                 detrend: bool = False, apply_pca: bool = False):
         """
         A Pattern Sequence Based Forecasting model.
 
@@ -49,9 +50,11 @@ class Psf:
         self.cycle_length = cycle_length
         self.suppress_warnings = suppress_warnings
         self.apply_diff = apply_diff
+        self.apply_pca = apply_pca
         self.min_max_scaler = MinMaxScaler()
         self.norm_data = None  # will be instantiated when calling 'fit'
         self.preds = None  # will be instantiated when calling 'predict'
+        self.pca = None
 
     def preprocessing(self, data: ArrayLike) -> np.array:
         """
@@ -87,8 +90,10 @@ class Psf:
             warnings.warn(warn_str)
         norm_data = norm_data[fit:]
         split_idxs = np.arange(self.cycle_length, len(norm_data), self.cycle_length, dtype=int)
-        cycles = np.array_split(norm_data, split_idxs)
-        return np.stack(cycles)
+        cycles = np.stack(np.array_split(norm_data, split_idxs))
+        if self.apply_pca:
+            self.pca = PCA(n_components=0.95).fit(cycles)
+        return cycles
 
     def fit(self, data: ArrayLike, k_values=tuple(range(2, 12)), w_values=tuple(range(1, 20))) -> "Psf":
         """
@@ -110,7 +115,7 @@ class Psf:
         self.norm_data = self.preprocessing(data)
         # Find optimal number (K) of clusters (or use the value specified by the user).
         if self.k is None:
-            self.k = optimum_k(self.norm_data, k_values)
+            self.k = optimum_k(self.norm_data, k_values, self.pca)
         # Find optimal window size (W) (or use the value specified by the user).
         if self.w is None:
             self.w = optimum_w(self.norm_data, self.k, self.cycle_length, w_values)
@@ -138,7 +143,7 @@ class Psf:
         # Predict the 'n_ahead' next values for the time series.
         preds = psf_predict(dataset=self.norm_data, n_ahead=self.cycle_length * n_ahead,
                             cycle_length=self.cycle_length, k=self.k, w=self.w,
-                            supress_warnings=self.suppress_warnings)
+                            supress_warnings=self.suppress_warnings, pca=self.pca)
         self.preds = self.postprocessing(preds, orig_n_ahead)
         return self.preds
 

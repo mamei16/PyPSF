@@ -5,7 +5,7 @@ from pypsf.clustering import run_clustering
 from pypsf.predict import psf_predict
 
 
-def optimum_k(data: np.array, k_values: tuple[int]) -> int:
+def optimum_k(data: np.array, k_values: tuple[int], pca) -> int:
     """
     Perform a hyperparameter search using the provided values of 'k' to
     determine the number of clusters 'k' that achieve the highest silhouette
@@ -29,7 +29,7 @@ def optimum_k(data: np.array, k_values: tuple[int]) -> int:
     for k in k_values:
         if 1 < k < len(data):
             # Using algorithm kMeans for clustering.
-            k_means = run_clustering(data, k)
+            k_means = run_clustering(data, k, pca)
             clusters = k_means.labels_
             # Evaluate clustering using silhouette index.
             s = silhouette_score(data, clusters)
