@@ -4,6 +4,7 @@ import numpy as np
 from numpy.typing import ArrayLike
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import MinMaxScaler
+from sklearn.exceptions import NotFittedError
 
 from pypsf.hyperparameter_search import optimum_k, optimum_w
 from pypsf.predict import psf_predict, format_warning
@@ -130,6 +131,9 @@ class Psf:
         Returns (np.array):
             A numpy array of generated predictions
         """
+        if self.norm_data is None:
+            raise NotFittedError("This Psf instance is not fitted yet. Call 'fit' with "
+                                 "appropriate arguments before using this estimator.")
         orig_n_ahead = n_ahead
         n_ahead = int((n_ahead / self.cycle_length) + 1)
         fit = orig_n_ahead % self.cycle_length
