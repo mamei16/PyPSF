@@ -83,7 +83,8 @@ class Psf:
         # Split data into cycles
         fit = len(data) % self.cycle_length
         if fit > 0 and not self.suppress_warnings:
-            psf_warn(f"\nTime Series length is not multiple of {self.cycle_length}. Cutting first {fit} values!")
+            psf_warn(f"\nTime Series length {'after differencing ' if self.apply_diff else ''}"
+                     f"is not a multiple of {self.cycle_length}. Cutting first {fit} values!")
         norm_data = norm_data[fit:]
         split_idxs = np.arange(self.cycle_length, len(norm_data), self.cycle_length, dtype=int)
         cycles = np.array_split(norm_data, split_idxs)
@@ -106,6 +107,11 @@ class Psf:
         Returns:
             self (Psf)
         """
+        num_training_samples = len(data)
+        if (num_training_samples < self.cycle_length or
+                (self.apply_diff and num_training_samples - self.diff_periods < self.cycle_length)):
+            raise ValueError(f"Length of training data {'after differencing ' if self.apply_diff else ''}"
+                             "must at least be equal to cycle length")
         self.norm_data = self.preprocessing(data)
         if (num_cycles := len(self.norm_data)) <= 2 and not self.suppress_warnings:
             psf_warn(f"\nOnly {num_cycles} cycles remaining after preprocessing."
