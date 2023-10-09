@@ -83,8 +83,8 @@ class Psf:
         # Split data into cycles
         fit = len(data) % self.cycle_length
         if fit > 0 and not self.suppress_warnings:
-            warn_str = f"\nTime Series length is not multiple of {self.cycle_length}. Cutting first {fit} values!"
-            warnings.warn(warn_str)
+            warnings.formatwarning = format_warning
+            warnings.warn(f"\nTime Series length is not multiple of {self.cycle_length}. Cutting first {fit} values!")
         norm_data = norm_data[fit:]
         split_idxs = np.arange(self.cycle_length, len(norm_data), self.cycle_length, dtype=int)
         cycles = np.array_split(norm_data, split_idxs)
@@ -108,6 +108,10 @@ class Psf:
             self (Psf)
         """
         self.norm_data = self.preprocessing(data)
+        if (num_cycles := len(self.norm_data)) <= 2 and not self.suppress_warnings:
+            warnings.formatwarning = format_warning
+            warnings.warn(f"\nOnly {num_cycles} cycles remaining after preprocessing."
+                          f" Only a single cluster will be formed.")
         # Find optimal number (K) of clusters (or use the value specified by the user).
         if self.k is None:
             self.k = optimum_k(self.norm_data, k_values)
@@ -131,9 +135,8 @@ class Psf:
         fit = orig_n_ahead % self.cycle_length
         if fit > 0 and not self.suppress_warnings:
             warnings.formatwarning = format_warning
-            warn_str = f"\nPrediction horizon {orig_n_ahead} is not multiple of {self.cycle_length}." \
-                       f" Using {n_ahead * self.cycle_length} as intermediate prediction horizon!"
-            warnings.warn(warn_str)
+            warnings.warn(f"\nPrediction horizon {orig_n_ahead} is not multiple of {self.cycle_length}."
+                          f" Using {n_ahead * self.cycle_length} as intermediate prediction horizon!")
 
         # Predict the 'n_ahead' next values for the time series.
         preds = psf_predict(dataset=self.norm_data, n_ahead=self.cycle_length * n_ahead,
