@@ -1,4 +1,5 @@
 import warnings
+import inspect
 
 import numpy as np
 
@@ -33,8 +34,10 @@ def psf_warn(message: str):
     Print a warning using a custom format, without affecting the format of
     warnings issued outside this module.
     """
+    caller_frame = inspect.stack()[1][0]
+    info = inspect.getframeinfo(caller_frame)
     orig_formatwarning = warnings.formatwarning
     warnings.formatwarning = (lambda message, category,
                                      filename, lineno, _: f"{filename}:{lineno}:{category.__name__}:{message}\n")
-    warnings.warn(message)
+    warnings.warn_explicit(message, UserWarning, info.filename, info.lineno)
     warnings.formatwarning = orig_formatwarning
