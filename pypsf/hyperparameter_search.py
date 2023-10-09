@@ -30,9 +30,9 @@ def optimum_k(data: np.array, k_values: tuple[int]) -> int:
         if 1 < k < len(data):
             # Using algorithm kMeans for clustering.
             k_means = run_clustering(data, k)
-            clusters = k_means.labels_
+            cluster_labels = k_means.labels_
             # Evaluate clustering using silhouette index.
-            s = silhouette_score(data, clusters)
+            s = silhouette_score(data, cluster_labels)
             # Store best k value so far.
             if s > best_s:
                 best_s = s
