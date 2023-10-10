@@ -1,5 +1,5 @@
 import numpy as np
-from sklearn.cluster import KMeans, AffinityPropagation
+from sklearn.cluster import KMeans
 
 
 def run_clustering(cycles: list[np.array], n_clusters: int) -> KMeans:
