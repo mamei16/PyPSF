@@ -51,7 +51,13 @@ def psf_predict(dataset: np.array, n_ahead: int, cycle_length: int, k, w,
             neighbors = neighbor_indices(cluster_labels, current_w)
             if neighbors:
                 break
-        if not neighbors:
+        if neighbors:
+            # If some patterns were found.
+            # Step 4. Compute the average of the neighbors.
+            pred = np.mean([temp[x] for x in neighbors], axis=0)
+            # Step 5. Append prediction to produce the following ones.
+            temp.append(pred)
+        else:
             # If no window size produces neighbors, use fallback
             label_counts = Counter(cluster_labels)
             biggest_cluster, _ = max(label_counts.items(), key=lambda x: x[1])
@@ -61,11 +67,5 @@ def psf_predict(dataset: np.array, n_ahead: int, cycle_length: int, k, w,
             if not supress_warnings:
                 psf_warn("No pattern was found in training for any window size.\n"
                          "Using centroid of largest cluster as the prediction!")
-        else:
-            # If some patterns were found.
-            # Step 4. Compute the average of the neighbors.
-            pred = np.mean([temp[x] for x in neighbors], axis=0)
-            # Step 5. Append prediction to produce the following ones.
-            temp.append(pred)
 
     return np.array(temp[-n_ahead_cycles:])
