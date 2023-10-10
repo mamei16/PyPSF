@@ -15,5 +15,5 @@ def run_clustering(cycles: list[np.array], n_clusters: int) -> KMeans:
         kmeans (KMeans):
             The fitted K-means clustering object
     """
-    dataset = np.array(cycles)
+    cycles = np.array(cycles)
     return KMeans(n_clusters=n_clusters, init='random', n_init="auto", random_state=3683475120).fit(cycles)

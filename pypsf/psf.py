@@ -1,13 +1,12 @@
-import warnings
-
 import numpy as np
 from numpy.typing import ArrayLike
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.exceptions import NotFittedError
 
+from pypsf.utils import reverse_diff, psf_warn
 from pypsf.hyperparameter_search import optimum_k, optimum_w
-from pypsf.predict import psf_predict, format_warning
+from pypsf.predict import psf_predict
 
 
 class Psf:
@@ -84,8 +83,8 @@ class Psf:
         # Split data into cycles
         fit = len(data) % self.cycle_length
         if fit > 0 and not self.suppress_warnings:
-            warnings.formatwarning = format_warning
-            warnings.warn(f"\nTime Series length is not multiple of {self.cycle_length}. Cutting first {fit} values!")
+            psf_warn(f"\nTime Series length {'after differencing ' if self.apply_diff else ''}"
+                     f"is not a multiple of {self.cycle_length}. Cutting first {fit} values!")
         norm_data = norm_data[fit:]
         split_idxs = np.arange(self.cycle_length, len(norm_data), self.cycle_length, dtype=int)
         cycles = np.array_split(norm_data, split_idxs)
@@ -108,10 +107,14 @@ class Psf:
         Returns:
             self (Psf)
         """
+        num_training_samples = len(data)
+        if (num_training_samples < self.cycle_length or
+                (self.apply_diff and num_training_samples - self.diff_periods < self.cycle_length)):
+            raise ValueError(f"Length of training data {'after differencing ' if self.apply_diff else ''}"
+                             "must at least be equal to cycle length")
         self.norm_data = self.preprocessing(data)
         if (num_cycles := len(self.norm_data)) <= 2 and not self.suppress_warnings:
-            warnings.formatwarning = format_warning
-            warnings.warn(f"\nOnly {num_cycles} cycles remaining after preprocessing."
+            psf_warn(f"\nOnly {num_cycles} cycles remaining after preprocessing."
                           f" Only a single cluster will be formed.")
         # Find optimal number (K) of clusters (or use the value specified by the user).
         if self.k is None:
@@ -138,9 +141,8 @@ class Psf:
         n_ahead = int((n_ahead / self.cycle_length) + 1)
         fit = orig_n_ahead % self.cycle_length
         if fit > 0 and not self.suppress_warnings:
-            warnings.formatwarning = format_warning
-            warnings.warn(f"\nPrediction horizon {orig_n_ahead} is not multiple of {self.cycle_length}."
-                          f" Using {n_ahead * self.cycle_length} as intermediate prediction horizon!")
+            psf_warn(f"\nPrediction horizon {orig_n_ahead} is not multiple of {self.cycle_length}."
+                     f" Using {n_ahead * self.cycle_length} as intermediate prediction horizon!")
 
         # Predict the 'n_ahead' next values for the time series.
         preds = psf_predict(dataset=self.norm_data, n_ahead=self.cycle_length * n_ahead,
@@ -181,28 +183,3 @@ class Psf:
 
     def __repr__(self):
         return f"PSF | k = {self.k}, w = {self.w}, cycle_length = {self.cycle_length}"
-
-
-def reverse_diff(orig_vals: np.array, diffed: np.array, periods: int) -> np.array:
-    """
-    Reverse the first order differencing that was applied to the given
-    data.
-    Args:
-        orig_vals (np.array):
-            The last 'd' values of the original series before differencing was
-            applied, where 'd' is the number of differencing periods.
-        diffed (np.array):
-            A series to which first order differencing was applied.
-        periods (np.array):
-            The number of differencing periods
-    Returns:
-        res (np.array):
-            The given data with no more differencing applied
-    """
-    length = len(diffed)
-    res = np.zeros(length)
-    for i in range(periods):
-        indices = np.arange(i, length, periods, dtype=int)
-        undiffed = orig_vals[i] + np.cumsum(diffed[i::periods])
-        res[indices] = undiffed
-    return res
