@@ -63,7 +63,6 @@ def psf_predict(dataset: np.array, n_ahead: int, cycle_length: int, k, w,
             biggest_cluster, _ = max(label_counts.items(), key=lambda x: x[1])
             centroid = k_means.cluster_centers_[biggest_cluster]
             temp.append(centroid)  # Use centroid of biggest cluster as prediction
-            # Set the current window to its initial value and make next prediction.
             if not supress_warnings:
                 psf_warn("No pattern was found in training for any window size.\n"
                          "Using centroid of largest cluster as the prediction!")
