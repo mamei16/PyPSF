@@ -36,5 +36,5 @@ jobs:
         python -m build
     - name: Publish package
       run: |
-        echo "${{ secrets.PYPIRC }}" > .pypirc
+        echo "${{ secrets.PYPIRC }}" > ~/.pypirc
         python3 -m twine upload --repository pypsf dist/**
