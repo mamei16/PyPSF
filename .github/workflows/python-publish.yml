@@ -32,7 +32,7 @@ jobs:
         pip install build
     - name: Build package
       run: |
-        sed -i "s/{{VERSION}}/$GITHUB_REF/g" pyproject.toml
+        sed -i "s|{{VERSION}}|${GITHUB_REF}|g" pyproject.toml
         python -m build
     - name: Publish package
       run: |
