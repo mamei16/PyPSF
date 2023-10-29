@@ -1,3 +1,5 @@
+from typing import List
+
 import numpy as np
 from numpy.typing import ArrayLike
 from sklearn.linear_model import LinearRegression
@@ -152,7 +154,7 @@ class Psf:
         self.preds = self.postprocessing(preds, orig_n_ahead)
         return self.preds
 
-    def postprocessing(self, preds: list[np.array], orig_n_ahead: int) -> np.array:
+    def postprocessing(self, preds: List[np.array], orig_n_ahead: int) -> np.array:
         """
         Performs the inverse of 'preprocessing', i.e.:
             1. (Optional) Re-add a linear trend from the data if self.detrend is

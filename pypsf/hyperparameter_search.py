@@ -1,3 +1,5 @@
+from typing import Tuple
+
 import numpy as np
 from sklearn.metrics import silhouette_score, mean_absolute_error
 
@@ -5,7 +7,7 @@ from pypsf.clustering import run_clustering
 from pypsf.predict import psf_predict
 
 
-def optimum_k(data: np.array, k_values: tuple[int]) -> int:
+def optimum_k(data: np.array, k_values: Tuple[int]) -> int:
     """
     Perform a hyperparameter search using the provided values of 'k' to
     determine the number of clusters 'k' that achieve the highest silhouette
@@ -40,7 +42,7 @@ def optimum_k(data: np.array, k_values: tuple[int]) -> int:
     return best_k
 
 
-def optimum_w(data: np.array, k: int, cycle_length: int, w_values: tuple[int]) -> int:
+def optimum_w(data: np.array, k: int, cycle_length: int, w_values: Tuple[int]) -> int:
     """
     Perform a hyperparameter search using the provided values of 'w' to
     determine the window size that results in the lowest mean absolute error.

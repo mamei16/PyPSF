@@ -1,8 +1,10 @@
 import numpy as np
+import sklearn
 from sklearn.cluster import KMeans
+from typing import List
 
 
-def run_clustering(cycles: list[np.array], n_clusters: int) -> KMeans:
+def run_clustering(cycles: List[np.array] or np.array, n_clusters: int) -> KMeans:
     """
     Apply K-means clustering to the provided list of cycles.
     Args:
@@ -15,4 +17,5 @@ def run_clustering(cycles: list[np.array], n_clusters: int) -> KMeans:
         kmeans (KMeans):
             The fitted K-means clustering object
     """
-    return KMeans(n_clusters=n_clusters, init='random', n_init="auto", random_state=3683475120).fit(np.array(cycles))
+    return KMeans(n_clusters=n_clusters, init='random',
+                  n_init="auto" if sklearn.__version__ >= "1.2" else 10, random_state=3683475120).fit(np.array(cycles))

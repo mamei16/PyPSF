@@ -38,6 +38,6 @@ def psf_warn(message: str):
     info = inspect.getframeinfo(caller_frame)
     orig_formatwarning = warnings.formatwarning
     warnings.formatwarning = (lambda message, category,
-                                     filename, lineno, _: f"{filename}:{lineno}:{category.__name__}:{message}\n")
+                              filename, lineno, _: f"{filename}:{lineno}:{category.__name__}:{message}\n")
     warnings.warn_explicit(message, UserWarning, info.filename, info.lineno)
     warnings.formatwarning = orig_formatwarning

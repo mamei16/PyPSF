@@ -1,9 +1,10 @@
 import re
+from typing import List
 
 import numpy as np
 
 
-def neighbor_indices(cluster_labels: np.array, w: int) -> list[int]:
+def neighbor_indices(cluster_labels: np.array, w: int) -> List[int]:
     """
     Take the last 'w' cluster labels and return all matching previous occurrences of this pattern in the rest of the
     list of cluster labels (so-called neighbors). The is done by first converting the list of ints
