@@ -113,9 +113,10 @@ class Psf:
             raise ValueError(f"Length of training data {'after differencing ' if self.apply_diff else ''}"
                              "must at least be equal to cycle length")
         self.norm_data = self.preprocessing(data)
-        if (num_cycles := len(self.norm_data)) <= 2 and not self.suppress_warnings:
+        num_cycles = len(self.norm_data)
+        if num_cycles <= 2 and not self.suppress_warnings:
             psf_warn(f"\nOnly {num_cycles} cycles remaining after preprocessing."
-                          f" Only a single cluster will be formed.")
+                     f" Only a single cluster will be formed.")
         # Find optimal number (K) of clusters (or use the value specified by the user).
         if self.k is None:
             self.k = optimum_k(self.norm_data, k_values)
