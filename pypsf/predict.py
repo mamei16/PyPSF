@@ -1,4 +1,5 @@
 from collections import Counter
+from typing import List
 
 import numpy as np
 
@@ -8,7 +9,7 @@ from pypsf.utils import psf_warn
 
 
 def psf_predict(dataset: np.array, n_ahead: int, cycle_length: int, k, w,
-                supress_warnings=False) -> np.array:
+                supress_warnings=False) -> List[np.array]:
     """
     Run the PSF algorithm on the provided data to generate the desired number
     of predictions.
@@ -67,4 +68,4 @@ def psf_predict(dataset: np.array, n_ahead: int, cycle_length: int, k, w,
                 psf_warn("No pattern was found in training for any window size.\n"
                          "Using centroid of largest cluster as the prediction!")
 
-    return np.array(temp[-n_ahead_cycles:])
+    return temp[-n_ahead_cycles:]
