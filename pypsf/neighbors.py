@@ -24,7 +24,7 @@ def neighbor_indices(cluster_labels: np.array, w: int) -> List[int]:
     pattern = cluster_labels[-w:]
     p = ''.join(to_char(i) for i in pattern)
     p = re.compile(p)
-    matches = re.finditer(p, t)
+    matches = p.finditer(t)
     return [match.end() for match in matches]
 
 
