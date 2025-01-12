@@ -71,7 +71,7 @@ def optimum_w(data: np.array, k: int, cycle_length: int, w_values: Tuple[int]) -
     best_w = 0
 
     # Step 2. Find the window size (W) that minimizes the error.
-    min_err = np.Inf
+    min_err = np.inf
     for w in w_values:
         if 0 < w < n:
             # 2.1 Perform prediction with the current 'w' value.
